@@ -11,14 +11,14 @@
   background: #195137;
   box-shadow: 1px 0 #52745c;
 }
-</style></head>
-<body><header><h1><img src="./purra-icon.png" width="30" height="30" alt="" style="vertical-align:middle;border-radius:6px"> Purra Golf Cup</h1><small>Versjon 1.6 · 4 beste av maks 10 runder</small></header><main>
-<div class="panel"><div class="row"><label>Turnering<select id="tournament" onchange="switchTournament(this.value)"></select></label><button onclick="newTournament()">Ny turnering</button><button onclick="renameTournament()">Endre navn</button><button class="danger" onclick="removeTournament()">Slett turnering</button></div></div>
-<nav><button id="tab-stand" class="active" onclick="tab('stand')">Resultater</button><button id="tab-rounds" onclick="tab('rounds')">Alle runder</button><button id="tab-players" onclick="tab('players')">Spillere</button></nav>
-<section id="stand"><div class="panel"><h3>Registrer runde</h3><div class="row"><label>Spiller<select id="who" style="width:100%;padding:10px;font-size:16px"></select></label><label>Brutto slag<input id="gross" type="number" min="0" step="1" inputmode="numeric" placeholder="Slag"></label><button onclick="addRound()">Lagre</button></div><p class="note">0 slag kan lagres, men teller aldri blant de fire beste rundene. Netto = brutto − fast handicap.</p></div><div class="panel"><h3>Stilling</h3><div class="scroll"><table><thead><tr><th>#</th><th>Spiller</th><th>HCP</th><th>Runder</th><th>Netto hittil</th><th>4 beste netto</th></tr></thead><tbody id="board"></tbody></table></div><p class="note">Listen er sortert etter netto hittil, lavest først. Plassering tildeles etter fire gyldige runder. Lavest sum vinner. Ved lik sum vises delt plassering.</p></div></section>
+body:not(.editing) [data-edit]{display:none!important}body:not(.editing) .round-btn{pointer-events:none} [hidden]{display:none!important}</style></head>
+<body><header><h1><img src="./purra-icon.png" width="30" height="30" alt="" style="vertical-align:middle;border-radius:6px"> Purra Golf Cup</h1><small>Felles resultatliste · 4 beste av maks 10 runder</small></header><main><div class="panel"><p id="syncStatus" role="status">Henter turneringer …</p><button id="login" disabled onclick="loginCup()">Administrator</button> <button id="reload" onclick="refreshCup()">Oppdater</button> <button hidden id="publish" onclick="publishCup()">Overfør til D1</button> <button hidden id="original" onclick="downloadLocal('purra-before-d1','purra-for-d1.json')">Last ned kopi fra før overføring</button> <button hidden id="pending" onclick="downloadLocal(pendingKey,'purra-ulagret.json')">Last ned ulagret endring</button><form hidden id="credentials" onsubmit="authenticate(event)"><label>Administratorpassord <input id="secret" type="password" required autocomplete="current-password"></label><button>Logg inn</button></form></div>
+<div class="panel"><div class="row"><label>Turnering<select id="tournament" onchange="switchTournament(this.value)"></select></label><button data-edit onclick="newTournament()">Ny turnering</button><button data-edit onclick="renameTournament()">Endre navn</button><button data-edit class="danger" onclick="removeTournament()">Slett turnering</button></div></div>
+<nav><button id="tab-stand" class="active" onclick="tab('stand')">Resultater</button><button id="tab-rounds" onclick="tab('rounds')">Alle runder</button><button data-edit id="tab-players" onclick="tab('players')">Spillere</button></nav>
+<section id="stand"><div data-edit class="panel"><h3>Registrer runde</h3><div class="row"><label>Spiller<select id="who" style="width:100%;padding:10px;font-size:16px"></select></label><label>Brutto slag<input id="gross" type="number" min="0" step="1" inputmode="numeric" placeholder="Slag"></label><button onclick="addRound()">Lagre</button></div><p class="note">0 slag kan lagres, men teller aldri blant de fire beste rundene. Netto = brutto − fast handicap.</p></div><div class="panel"><h3>Stilling</h3><div class="scroll"><table><thead><tr><th>#</th><th>Spiller</th><th>HCP</th><th>Runder</th><th>Netto hittil</th><th>4 beste netto</th></tr></thead><tbody id="board"></tbody></table></div><p class="note">Listen er sortert etter netto hittil, lavest først. Plassering tildeles etter fire gyldige runder. Lavest sum vinner. Ved lik sum vises delt plassering.</p></div></section>
 <section id="rounds" class="hidden"><div class="panel"><h3>Alle spilte runder</h3><p class="note">Hvert felt viser brutto og netto. Grønne felt er tellende runder. Trykk på et registrert resultat for å endre eller slette det. Runder med 0 vises, men teller ikke.</p><div class="scroll"><table><thead id="roundHead"></thead><tbody id="roundBody"></tbody></table></div></div></section>
-<section id="players" class="hidden"><div class="panel"><h3>Administrer spillere</h3><p class="note">Navn kan være opptil 10 tegn. Endring av handicap beregner alle nettoscorer på nytt.</p><div id="playerRows"></div><div class="row"><label>Nytt navn<input id="newName" maxlength="10" placeholder="Navn"></label><label>HCP<input id="newHcp" type="number" step="0.1" value="0" inputmode="decimal"></label><button onclick="addPlayer()">Legg til</button></div></div></section>
-<div class="panel"><div class="row"><button onclick="exportData()">Eksporter sikkerhetskopi</button><label style="flex:1">Importer sikkerhetskopi<input type="file" accept="application/json" onchange="importData(event)"></label></div><p class="note">Data lagres foreløpig kun på denne enheten i nettleseren. Eksporter jevnlig. Cloudflare D1 er ikke koblet til ennå.</p></div>
+<section data-edit id="players" class="hidden"><div class="panel"><h3>Administrer spillere</h3><p class="note">Navn kan være opptil 10 tegn. Endring av handicap beregner alle nettoscorer på nytt.</p><div id="playerRows"></div><div class="row"><label>Nytt navn<input id="newName" maxlength="10" placeholder="Navn"></label><label>HCP<input id="newHcp" type="number" step="0.1" value="0" inputmode="decimal"></label><button onclick="addPlayer()">Legg til</button></div></div></section>
+<div class="panel"><div class="row"><button onclick="exportData()">Eksporter sikkerhetskopi</button><label data-edit style="flex:1">Importer sikkerhetskopi<input type="file" accept="application/json" onchange="importData(event)"></label></div><p class="note">Eksport lagrer en kopi av turneringene som vises.</p></div>
 </main><script>
 const KEY = 'purra-golf-cup-v16';
 const LEGACY_KEY = 'purra-golf-cup-v14';
@@ -47,16 +47,91 @@ function activeTournament() {
   return state.tournaments.find(tournament => tournament.id === state.activeId);
 }
 
-function save() {
-  localStorage.setItem(KEY, JSON.stringify(state));
-  render();
+
+const api = 'https://purra-cup-sync.ruwi60.workers.dev/api/state';
+const pendingKey = 'purra-d1-unsent';
+let password = '', revision = null, ready = false, busy = false, shared = false;
+const el = id => document.getElementById(id);
+function message(text) { el('syncStatus').textContent = text; }
+function controls() {
+  const editing = Boolean(password && ready && !busy && shared);
+  document.body.classList.toggle('editing', editing);
+  el('login').disabled = busy || !ready;
+  el('login').textContent = password ? 'Logg ut' : 'Administrator';
+  el('publish').hidden = !(password && ready && !shared);
+  el('publish').disabled = busy;
+  el('reload').disabled = busy;
+  el('original').hidden = !localStorage.getItem('purra-before-d1');
+  el('pending').hidden = !localStorage.getItem(pendingKey);
+  el('tournament').disabled = busy;
 }
+function downloadLocal(key, filename) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([localStorage.getItem(key)], {type:'application/json'}));
+  a.download = filename; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+async function refreshCup() {
+  if (busy) return;
+  busy = true; controls();
+  try {
+    const response = await fetch(api, {cache:'no-store'});
+    if (!response.ok) throw Error();
+    const result = await response.json();
+    const selected = state.activeId;
+    shared = result.state !== null;
+    state = shared ? normalizeBackup(result.state) : loadState();
+    if (state.tournaments.some(t=>t.id===selected)) state.activeId=selected;
+    revision = result.revision; ready = true;
+    message(shared ? 'Resultater hentet fra D1.' : 'Ingen felles turnering ennå. Åpne appen på administratorens iPhone for å overføre lokale turneringer.');
+    render();
+  } catch { ready = false; message('Kunne ikke hente fra D1. Viser sist åpnede oversikt. Trykk Oppdater.'); }
+  finally { busy = false; controls(); }
+}
+async function loginCup() {
+  if (password) { password=''; el('credentials').hidden=true; controls(); return; }
+  el('credentials').hidden=false; el('secret').focus();
+}
+async function authenticate(event) {
+  event.preventDefault(); if(busy) return;
+  const value=el('secret').value;
+  busy=true; controls();
+  try {
+    const response=await fetch(api,{method:'POST',headers:{Authorization:'Bearer '+encodeURIComponent(value)}});
+    if(!response.ok) throw Error();
+    password=value; el('secret').value=''; el('credentials').hidden=true;
+    message(shared?'Administrator er innlogget.':'Kontroller spillerne og rundene før du trykker «Overfør til D1».');
+  } catch { message('Innlogging mislyktes. Kontroller passordet og forbindelsen.'); }
+  finally {busy=false;controls();}
+}
+async function save() {
+  if (!password || !ready || busy) return;
+  busy=true; controls();
+  const draft=JSON.stringify(state);
+  try {
+    if (!shared && !localStorage.getItem('purra-before-d1')) localStorage.setItem('purra-before-d1',draft);
+    localStorage.setItem(pendingKey,draft);
+    message('Lagrer i D1 …');
+    const response=await fetch(api,{method:'PUT',headers:{Authorization:'Bearer '+encodeURIComponent(password),'Content-Type':'application/json'},body:JSON.stringify({state,revision})});
+    if(!response.ok) throw Error(response.status===409?'En annen endring er lagret i D1.':'D1 kunne ikke bekrefte lagringen.');
+    revision=(await response.json()).revision; shared=true;
+    localStorage.removeItem(pendingKey);
+    message('Lagret i D1.'); render();
+  } catch(error) {
+    ready=false;
+    message(error.message+' Last ned en kopi av endringen og trykk Oppdater før du fortsetter.');
+  } finally {busy=false;controls();}
+}
+function publishCup() {
+  if(shared || !password || busy || !ready) return;
+  if(confirm('Overføre alle turneringene som vises her til felles resultatliste? Spillernavn, handicap og runder blir synlige via applenken.')) save();
+}
+
 
 function switchTournament(id) {
   if (!state.tournaments.some(tournament => tournament.id === id)) return;
   state.activeId = id;
   document.getElementById('gross').value = '';
-  save();
+  render();
 }
 
 function newTournament() {
@@ -67,7 +142,8 @@ function newTournament() {
   }));
   const id = crypto.randomUUID();
   state.tournaments.push({id, name, players});
-  switchTournament(id);
+  state.activeId = id;
+  save();
 }
 
 function removeTournament() {
@@ -76,7 +152,7 @@ function removeTournament() {
   const last = remaining.length === 0;
   if (!confirm('Slette «' + current.name + '» og alle resultatene i turneringen?' + (last ? ' En ny, tom turnering opprettes.' : ''))) return;
   state = last ? firstTournament([]) : {activeId: remaining[0].id, tournaments: remaining};
-  switchTournament(state.activeId);
+  save();
 }
 
 function renameTournament() {
@@ -97,7 +173,7 @@ function addRound(){let p=activeTournament().players.find(x=>x.id===document.get
 function addPlayer(){let name=document.getElementById('newName').value.trim().slice(0,10),hcp=Number(document.getElementById('newHcp').value);if(!name||!Number.isFinite(hcp)){alert('Oppgi navn og gyldig handicap.');return}activeTournament().players.push({id:crypto.randomUUID(),name,hcp,rounds:[]});document.getElementById('newName').value='';save()}
 function updatePlayer(id){let p=activeTournament().players.find(x=>x.id===id),name=document.getElementById('n'+id).value.trim().slice(0,10),hcp=Number(document.getElementById('h'+id).value);if(!name||!Number.isFinite(hcp)){alert('Ugyldig navn eller handicap.');return}p.name=name;p.hcp=hcp;save()}
 function removePlayer(id){let p=activeTournament().players.find(x=>x.id===id);if(confirm('Slette '+p.name+' og alle rundene?')){activeTournament().players=activeTournament().players.filter(x=>x.id!==id);save()}}
-function editRound(id,i){let p=activeTournament().players.find(x=>x.id===id),raw=prompt('Brutto slag for runde '+(i+1)+' (skriv SLETT for å fjerne)',p.rounds[i]);if(raw===null)return;if(raw.trim().toUpperCase()==='SLETT'){if(confirm('Slette runden?')){p.rounds.splice(i,1);save()}return}let n=Number(raw);if(raw.trim()===''||!Number.isInteger(n)||n<0){alert('Ugyldig antall slag');return}p.rounds[i]=n;save()}
+function editRound(id,i){if(!password||busy||!ready||!shared)return;let p=activeTournament().players.find(x=>x.id===id),raw=prompt('Brutto slag for runde '+(i+1)+' (skriv SLETT for å fjerne)',p.rounds[i]);if(raw===null)return;if(raw.trim().toUpperCase()==='SLETT'){if(confirm('Slette runden?')){p.rounds.splice(i,1);save()}return}let n=Number(raw);if(raw.trim()===''||!Number.isInteger(n)||n<0){alert('Ugyldig antall slag');return}p.rounds[i]=n;save()}
 function render(){const select = document.getElementById('tournament');
 select.innerHTML = state.tournaments.map(t => `<option value="${esc(t.id)}">${esc(t.name)}</option>`).join('');
 select.value = state.activeId;
@@ -147,7 +223,7 @@ async function importData(event) {
   if (!file) return;
   try {
     const data = normalizeBackup(JSON.parse(await file.text()));
-    if (confirm('Erstatte alle lokale turneringer med sikkerhetskopien?')) {
+    if (confirm('Erstatte alle felles turneringer med sikkerhetskopien?')) {
       const previous = state;
       state = data;
       try {
@@ -168,6 +244,8 @@ let state;
 try {
   state = loadState();
   render();
+  refreshCup();
+  window.addEventListener('focus',()=>{if(!password && ready) refreshCup();});
 } catch {
   document.querySelector('main').textContent =
     'Kunne ikke laste de lokale dataene. Åpne appen på nytt for å prøve igjen.';
