@@ -1,0 +1,12 @@
+{
+  "name": "purra-cup-sync",
+  "main": "worker.js",
+  "compatibility_date": "2026-11-01",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "purra-golf-cup-db",
+      "database_id": "ac73f6d7-36c6-4f53-a6f0-5d37d4546fa5"
+    }
+  ]
+}
