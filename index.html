@@ -12,7 +12,7 @@
   box-shadow: 1px 0 #52745c;
 }
 body:not(.editing) [data-edit]{display:none!important}body:not(.editing) .round-btn{pointer-events:none} [hidden]{display:none!important}</style></head>
-<body><header><h1><img src="./purra-icon.png" width="30" height="30" alt="" style="vertical-align:middle;border-radius:6px"> Purra Golf Cup</h1><small>Felles resultatliste · 4 beste av maks 10 runder</small></header><main><div class="panel"><p id="syncStatus" role="status">Henter turneringer …</p><button id="login" disabled onclick="loginCup()">Administrator</button> <button id="reload" onclick="refreshCup()">Oppdater</button> <button hidden id="publish" onclick="publishCup()">Overfør til D1</button> <button hidden id="original" onclick="downloadLocal('purra-before-d1','purra-for-d1.json')">Last ned kopi fra før overføring</button> <button hidden id="pending" onclick="downloadLocal(pendingKey,'purra-ulagret.json')">Last ned ulagret endring</button><form hidden id="credentials" onsubmit="authenticate(event)"><label>Administratorpassord <input id="secret" type="password" required autocomplete="current-password"></label><button>Logg inn</button></form></div>
+<body><header><h1><img src="./purra-icon.png" width="30" height="30" alt="" style="vertical-align:middle;border-radius:6px"> Purra Golf Cup</h1><small>Felles resultatliste · 4 beste av maks 10 runder</small></header><main><div class="panel"><p id="syncStatus" role="status">Henter turneringer …</p><button id="login" aria-controls="credentials" aria-expanded="false" disabled onclick="loginCup()">Administrator</button> <button id="reload" onclick="refreshCup()">Oppdater</button> <button hidden id="publish" onclick="publishCup()">Overfør til D1</button> <button hidden id="original" onclick="downloadLocal('purra-before-d1','purra-for-d1.json')">Last ned kopi fra før overføring</button> <button hidden id="pending" onclick="downloadLocal(pendingKey,'purra-ulagret.json')">Last ned ulagret endring</button><form hidden id="credentials" onsubmit="authenticate(event)"><label>Administratorpassord <input id="secret" type="password" required autocomplete="current-password"></label><button>Logg inn</button></form></div>
 <div class="panel"><div class="row"><label>Turnering<select id="tournament" onchange="switchTournament(this.value)"></select></label><button data-edit onclick="newTournament()">Ny turnering</button><button data-edit onclick="renameTournament()">Endre navn</button><button data-edit class="danger" onclick="removeTournament()">Slett turnering</button></div></div>
 <nav><button id="tab-stand" class="active" onclick="tab('stand')">Resultater</button><button id="tab-rounds" onclick="tab('rounds')">Alle runder</button><button data-edit id="tab-players" onclick="tab('players')">Spillere</button></nav>
 <section id="stand"><div data-edit class="panel"><h3>Registrer runde</h3><div class="row"><label>Spiller<select id="who" style="width:100%;padding:10px;font-size:16px"></select></label><label>Brutto slag<input id="gross" type="number" min="0" step="1" inputmode="numeric" placeholder="Slag"></label><button onclick="addRound()">Lagre</button></div><p class="note">0 slag kan lagres, men teller aldri blant de fire beste rundene. Netto = brutto − fast handicap.</p></div><div class="panel"><h3>Stilling</h3><div class="scroll"><table><thead><tr><th>#</th><th>Spiller</th><th>HCP</th><th>Runder</th><th>Netto hittil</th><th>4 beste netto</th></tr></thead><tbody id="board"></tbody></table></div><p class="note">Listen er sortert etter netto hittil, lavest først. Plassering tildeles etter fire gyldige runder. Lavest sum vinner. Ved lik sum vises delt plassering.</p></div></section>
@@ -57,7 +57,9 @@ function controls() {
   const editing = Boolean(password && ready && !busy && shared);
   document.body.classList.toggle('editing', editing);
   el('login').disabled = busy || !ready;
-  el('login').textContent = password ? 'Logg ut' : 'Administrator';
+  const open = !el('credentials').hidden;
+  el('login').setAttribute('aria-expanded', String(open));
+  el('login').textContent = password ? 'Logg ut' : open ? 'Lukk innlogging' : 'Administrator';
   el('publish').hidden = !(password && ready && !shared);
   el('publish').disabled = busy;
   el('reload').disabled = busy;
@@ -89,7 +91,11 @@ async function refreshCup() {
 }
 async function loginCup() {
   if (password) { password=''; el('credentials').hidden=true; controls(); return; }
-  el('credentials').hidden=false; el('secret').focus();
+  const form = el('credentials');
+  form.hidden = !form.hidden;
+  if (form.hidden) el('secret').value = '';
+  else el('secret').focus();
+  controls();
 }
 async function authenticate(event) {
   event.preventDefault(); if(busy) return;
