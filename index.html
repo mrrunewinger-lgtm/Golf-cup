@@ -97,10 +97,16 @@ async function authenticate(event) {
   busy=true; controls();
   try {
     const response=await fetch(api,{method:'POST',headers:{Authorization:'Bearer '+encodeURIComponent(value)}});
-    if(!response.ok) throw Error();
+    if (!response.ok) {
+      const detail = await response.json().catch(() => ({}));
+      message(detail.code === 'admin_unconfigured' ? 'ADMIN_PASSWORD mangler i produksjon på purra-cup-sync.' :
+        response.status === 401 ? 'Passordet ble avvist. Bruk administratorpassordet for Golf Cup.' :
+        'Innloggingstjenesten svarte med HTTP ' + response.status + '.');
+      return;
+    }
     password=value; el('secret').value=''; el('credentials').hidden=true;
     message(shared?'Administrator er innlogget.':'Kontroller spillerne og rundene før du trykker «Overfør til D1».');
-  } catch { message('Innlogging mislyktes. Kontroller passordet og forbindelsen.'); }
+  } catch { message('Appen fikk ikke kontakt med innloggingstjenesten. Trykk Oppdater og prøv igjen.'); }
   finally {busy=false;controls();}
 }
 async function save() {
