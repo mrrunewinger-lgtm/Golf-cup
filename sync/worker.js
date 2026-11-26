@@ -44,7 +44,8 @@ async function cupApi(request, env) {
       return reply(row ? { state: normalizeBackup(JSON.parse(row.data)), revision: row.updated_at } : { state: null, revision: null });
     }
     if (!["POST","PUT"].includes(request.method)) return reply({},405);
-    if (!env.ADMIN_PASSWORD || request.headers.get("Authorization") !== "Bearer " + encodeURIComponent(env.ADMIN_PASSWORD)) return reply({},401);
+    if (!env.ADMIN_PASSWORD) return reply({ code: "admin_unconfigured" },503);
+    if (request.headers.get("Authorization") !== "Bearer " + encodeURIComponent(env.ADMIN_PASSWORD)) return reply({},401);
     if (request.method === "POST") return reply({ admin: true });
     const raw = await request.text();
     if (raw.length > 1000000) return reply({},413);
