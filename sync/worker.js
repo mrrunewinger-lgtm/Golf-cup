@@ -7,7 +7,7 @@ export default {
       await env.DB.prepare("SELECT id, data, updated_at FROM cup_state LIMIT 0").all();
       return Response.json({ database: "ok" }, { headers: { "Cache-Control": "no-store" } });
     } catch {
-      return Response.json({ database: "unavailable" }, { status: 503 });
+      return Response.json({ database: "unavailable" }, { status: 503, headers: { "Cache-Control": "no-store" } });
     }
   }
 };
