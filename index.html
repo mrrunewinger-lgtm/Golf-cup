@@ -17,6 +17,7 @@ body:not(.editing) [data-edit]{display:none!important}body:not(.editing) .round-
 #rounds .resultat-tittel + .note { margin-top: 6px; }
 #tab-rounds { padding: 8px 9px; align-self: center; }
 #syncStatus { margin: 0 0 6px; }
+#syncStatus:empty { margin: 0; }
 </style></head>
 <body><header><h1><img src="./purra-icon.png" width="30" height="30" alt="" style="vertical-align:middle;border-radius:6px"> Purra Golf Cup</h1><small>Felles resultatliste · 4 beste av maks 10 runder</small></header><main>
 <div class="panel"><div class="row"><label>Turnering<select id="tournament" onchange="switchTournament(this.value)"></select></label><button data-edit onclick="newTournament()">Ny turnering</button><button data-edit onclick="renameTournament()">Endre navn</button><button data-edit class="danger" onclick="removeTournament()">Slett turnering</button></div></div>
@@ -25,7 +26,7 @@ body:not(.editing) [data-edit]{display:none!important}body:not(.editing) .round-
 <section id="rounds" class="hidden"><div class="panel resultat-panel"><h3 class="resultat-tittel">Alle spilte runder</h3><p class="note">Hvert felt viser brutto og netto. Grønne felt er tellende runder. Trykk på et registrert resultat for å endre eller slette det. Runder med 0 vises, men teller ikke.</p><div class="scroll"><table><thead id="roundHead"></thead><tbody id="roundBody"></tbody></table></div></div></section>
 <section data-edit id="players" class="hidden"><div class="panel"><h3>Administrer spillere</h3><p class="note">Navn kan være opptil 10 tegn. Endring av handicap beregner alle nettoscorer på nytt.</p><div id="playerRows"></div><div class="row"><label>Nytt navn<input id="newName" maxlength="10" placeholder="Navn"></label><label>HCP<input id="newHcp" type="number" step="0.1" value="0" inputmode="decimal"></label><button onclick="addPlayer()">Legg til</button></div></div></section>
 <div class="panel" id="backupPanel" hidden><div class="row"><button onclick="exportData()">Eksporter sikkerhetskopi</button><label data-edit style="flex:1">Importer sikkerhetskopi<input type="file" accept="application/json" onchange="importData(event)"></label></div><p class="note">Eksport lagrer en kopi av turneringene som vises.</p></div>
-<div class="panel"><p id="syncStatus" role="status">Henter turneringer …</p><button id="reload" onclick="refreshCup()">Oppdater</button> <button hidden id="publish" onclick="publishCup()">Overfør til D1</button> <button hidden id="original" onclick="downloadLocal('purra-before-d1','purra-for-d1.json')">Last ned kopi fra før overføring</button> <button hidden id="pending" onclick="downloadLocal(pendingKey,'purra-ulagret.json')">Last ned ulagret endring</button> <button id="login" aria-controls="credentials" aria-expanded="false" disabled onclick="loginCup()">Administrator</button><form hidden id="credentials" onsubmit="authenticate(event)"><label>Administratorpassord <input id="secret" type="password" required autocomplete="current-password"></label><button>Logg inn</button></form></div>
+<div class="panel"><p id="syncStatus" role="status">Henter turneringer …</p><button id="reload" onclick="refreshCup()">Oppdater</button> <button hidden id="publish" onclick="publishCup()">Overfør til D1</button> <button hidden id="original" onclick="downloadLocal('purra-before-d1','purra-for-d1.json')">Last ned kopi fra før overføring</button> <button hidden id="pending" onclick="downloadLocal(pendingKey,'purra-ulagret.json')">Last ned ulagret endring</button> <button id="login" aria-controls="credentials" aria-expanded="false" disabled onclick="loginCup()">Admin login</button><form hidden id="credentials" onsubmit="authenticate(event)"><label>Administratorpassord <input id="secret" type="password" required autocomplete="current-password"></label><button>Logg inn</button></form></div>
 </main><script>
 const KEY = 'purra-golf-cup-v16';
 const LEGACY_KEY = 'purra-golf-cup-v14';
@@ -67,7 +68,7 @@ function controls() {
   el('login').disabled = busy || !ready;
   const open = !el('credentials').hidden;
   el('login').setAttribute('aria-expanded', String(open));
-  el('login').textContent = password ? 'Logg ut' : open ? 'Lukk innlogging' : 'Administrator';
+  el('login').textContent = password ? 'Logg ut' : open ? 'Lukk innlogging' : 'Admin login';
   el('publish').hidden = !(password && ready && !shared);
   el('publish').disabled = busy;
   el('reload').disabled = busy;
@@ -92,7 +93,7 @@ async function refreshCup() {
     state = shared ? normalizeBackup(result.state) : loadState();
     if (state.tournaments.some(t=>t.id===selected)) state.activeId=selected;
     revision = result.revision; ready = true;
-    message(shared ? 'Resultater hentet fra D1.' : 'Ingen felles turnering ennå. Åpne appen på administratorens iPhone for å overføre lokale turneringer.');
+    message(shared ? '' : 'Ingen felles turnering ennå. Åpne appen på administratorens iPhone for å overføre lokale turneringer.');
     render();
   } catch { ready = false; message('Kunne ikke hente fra D1. Viser sist åpnede oversikt. Trykk Oppdater.'); }
   finally { busy = false; controls(); }
