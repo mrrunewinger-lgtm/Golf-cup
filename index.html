@@ -19,6 +19,8 @@ body:not(.editing) [data-edit]{display:none!important}body:not(.editing) .round-
 #syncStatus:empty { margin: 0; }
 .admin-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .admin-actions #login { margin-inline-start: auto; }
+#stand .resultat-tittel { font-size: 1.5rem; }
+#stand .resultat-panel table { font-size: 1rem; }
 </style></head>
 <body><header><h1><img src="./purra-icon.png" width="30" height="30" alt="" style="vertical-align:middle;border-radius:6px"> Purra Golf Cup</h1><small>Felles resultatliste · 4 beste av maks 10 runder</small></header><main>
 <div class="panel"><div class="row"><label><select id="tournament" aria-label="Turnering" onchange="switchTournament(this.value)"></select></label><button data-edit onclick="newTournament()">Ny turnering</button><button data-edit onclick="renameTournament()">Endre navn</button><button data-edit class="danger" onclick="removeTournament()">Slett turnering</button></div></div>
